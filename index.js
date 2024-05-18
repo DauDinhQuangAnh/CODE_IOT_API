@@ -136,24 +136,23 @@ app.get("/api/getAllSensors", async (req, res) => {
   }
 });
 
-// Lấy device theo id
+//get device (id)
 app.get("/api/getDeviceById/:id_device", async (req, res) => {
   try {
     const { id_device } = req.params;
-    const device = await SensorModel.findOne({ id_device });
+    const sensor = await SensorModel.findOne({ id_device });
 
-    if (!device) {
-      return res.status(404).json({ error: "Device not found" });
+    if (!sensor) {
+      return res.status(404).json({ error: "Sensor not found" });
     }
 
-    res.status(200).json(device);
+    res.status(200).json(sensor);
   } catch (error) {
-    console.error("Error getting device by id:", error);
+    console.error("Error getting sensor by id:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
-// Cập nhật sensor theo id_device
+// Update sensor model based on id_device
 app.put("/api/updateSensor/:id_device", async (req, res) => {
   try {
     const { id_device } = req.params;
