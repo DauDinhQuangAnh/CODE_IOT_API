@@ -1,0 +1,25 @@
+{
+  "name": "control_device",
+  "version": "1.0.0",
+  "description": "Development for IOT subject (lab04)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git remote add origin https://github.com/SyLe-Van/Control-Devices-.git"
+  },
+  "author": "levansy",
+  "license": "ISC",
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "mongodb": "^6.6.1",
+    "mongoose": "^8.3.4",
+    "mongoose-slug-generator": "^1.0.4",
+    "socket.io": "^4.7.5"
+  }
+}
