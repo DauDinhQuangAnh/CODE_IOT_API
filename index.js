@@ -1,14 +1,83 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const app = express();
-const port = 3001;
 const cors = require("cors");
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+
 const DeviceModel = require("./models/DeviceModel");
 const SensorModel = require("./models/SensorModel");
-app.use(bodyParser.json());
-app.use(cors());
+const UserModel = require("./models/UserModel");
 
+const app = express();
+const port = process.env.PORT || 3001;
+
+// Cấu hình CORS
+app.use(cors({
+  origin: 'http://localhost:3000', // Thay thế bằng URL frontend của bạn
+  credentials: true
+}));
+
+app.use(bodyParser.json());
+
+// Kết nối đến MongoDB
+mongoose
+  .connect(
+    "mongodb+srv://20521059:VGVSh6jBMwHvT3wZ@podify.oauoj72.mongodb.net/?retryWrites=true&w=majority&appName=podify",
+    { useNewUrlParser: true, useUnifiedTopology: true }
+  )
+  .then(() => console.log("Connected to MongoDB..."))
+  .catch((err) => {
+    console.error("Could not connect to MongoDB:", err);
+  });
+
+// Đăng ký người dùng
+app.post("/api/register", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    const existingUser = await UserModel.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new UserModel({
+      username,
+      password: hashedPassword,
+    });
+
+    const savedUser = await newUser.save();
+    res.status(201).json(savedUser);
+  } catch (error) {
+    console.error("Error registering user:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Đăng nhập người dùng
+app.post("/api/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    const user = await UserModel.findOne({ username });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid username or password" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid username or password" });
+    }
+
+    res.status(200).json({ message: "Login successful" });
+  } catch (error) {
+    console.error("Error during login:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Thêm sensor mới
 app.post("/api/addSensors", async (req, res) => {
   try {
     const { id_device, temperature, humidity, light, status_light } = req.body;
@@ -26,6 +95,8 @@ app.post("/api/addSensors", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// Thêm device mới
 app.post("/api/addDevices", async (req, res) => {
   try {
     const { user, name, isActive, message } = req.body;
@@ -42,6 +113,8 @@ app.post("/api/addDevices", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// Lấy tất cả các device
 app.get("/api/getAllDevices", async (req, res) => {
   try {
     const devices = await DeviceModel.find();
@@ -52,7 +125,7 @@ app.get("/api/getAllDevices", async (req, res) => {
   }
 });
 
-// Route to get all sensors
+// Lấy tất cả các sensor
 app.get("/api/getAllSensors", async (req, res) => {
   try {
     const sensors = await SensorModel.find();
@@ -62,7 +135,8 @@ app.get("/api/getAllSensors", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-//get device (id)
+
+// Lấy device theo id
 app.get("/api/getDeviceById/:id_device", async (req, res) => {
   try {
     const { id_device } = req.params;
@@ -78,7 +152,8 @@ app.get("/api/getDeviceById/:id_device", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-// Update sensor model based on id_device
+
+// Cập nhật sensor theo id_device
 app.put("/api/updateSensor/:id_device", async (req, res) => {
   try {
     const { id_device } = req.params;
@@ -104,16 +179,7 @@ app.put("/api/updateSensor/:id_device", async (req, res) => {
   }
 });
 
-mongoose
-  .connect(
-    "mongodb+srv://20521059:VGVSh6jBMwHvT3wZ@podify.oauoj72.mongodb.net/?retryWrites=true&w=majority&appName=podify",
-    { useNewUrlParser: true, useUnifiedTopology: true }
-  )
-  .then(() => console.log("Connected to MongoDB..."))
-  .catch((err) => {
-    console.error("Could not connect to MongoDB:", err);
-  });
-
+// Bắt đầu server
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
 });
