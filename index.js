@@ -179,6 +179,39 @@ app.put("/api/updateSensor/:id_device", async (req, res) => {
   }
 });
 
+// Xóa thiết bị và các cảm biến liên quan
+app.delete("/api/deleteDevice/:id_device", async (req, res) => {
+  try {
+    const { id_device } = req.params;
+
+    // Xóa các cảm biến liên quan
+    await SensorModel.deleteMany({ id_device });
+
+    // Xóa thiết bị
+    await DeviceModel.findByIdAndDelete(id_device);
+
+    res.status(200).json({ message: "Device and related sensors deleted" });
+  } catch (error) {
+    console.error("Error deleting device:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Xóa cảm biến riêng
+app.delete("/api/deleteSensor/:id_sensor", async (req, res) => {
+  try {
+    const { id_sensor } = req.params;
+
+    // Xóa cảm biến
+    await SensorModel.findByIdAndDelete(id_sensor);
+
+    res.status(200).json({ message: "Sensor deleted" });
+  } catch (error) {
+    console.error("Error deleting sensor:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Bắt đầu server
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
